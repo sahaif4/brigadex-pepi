@@ -1,0 +1,76 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "description": "User accounts and roles",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "brigades",
+      "description": "Brigade data",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "alsintan",
+      "description": "Alsintan (Agricultural Machinery) data",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "operators",
+      "description": "Operator data",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "laporan",
+      "description": "Daily reports (Laporan Harian)",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "service",
+      "description": "Service records",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "kerusakan",
+      "description": "Damage records (Riwayat Kerusakan)",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "schedules",
+      "description": "Service schedules",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    },
+    {
+      "name": "audit",
+      "description": "Audit trail logs",
+      "securityRules": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      }
+    }
+  ]
+}

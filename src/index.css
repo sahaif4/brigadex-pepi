@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-primary-blue: #1E3A8A;
+  --color-active-blue: #2563EB;
+  --color-accent-orange: #F97316;
+  --color-app-bg: #F3F4F6;
+  --color-primary-green: #1E3A8A;
+  --color-active-green: #2563EB;
+  --color-accent-yellow: #F97316;
+}
+
+/* Dark Mode Implementation (High-Contrast Invert) */
+html.dark body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  backdrop-filter: invert(1) hue-rotate(180deg);
+}
+
+/* Prevent double-inversion on specific elements */
+html.dark img,
+html.dark video,
+html.dark canvas,
+html.dark .recharts-wrapper,
+html.dark [style*="background-image"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media print {
+  body {
+    background-color: white !important;
+  }
+  @page {
+    margin: 1.5cm;
+  }
+}
+
+

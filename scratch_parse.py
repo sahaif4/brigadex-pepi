@@ -1,0 +1,497 @@
+import csv
+import json
+import re
+
+csv_data = """No;Kabupaten;Kecamatan;Desa;Gapoktan/Poktan/Brigade;Nama Penerima;Komoditas;Alsintan;Jumlah Unit;Tahun Perolehan;Sumber Anggaran;Keterangan
+1;Bangka Selatan;Toboali;Rias;Gap. Sepakat Jaya;Ariyanto;Tanaman Pangan;Traktor Roda 2;1;2021;APBN;Baik
+2;Bangka Selatan;Toboali;Rias;UPJA Balai Benih;Bandrin;Tanaman Pangan;Traktor Roda 2;3;2021;APBN;Baik
+3;Bangka Selatan;Tukak Sadai;Terap;Gap. Terap Berjaya;Rosidi;Tanaman Pangan;Traktor Roda 2;1;2021;APBN;Baik
+4;Bangka Selatan;Lepar;Penutuk;UPJA Penutuk Jaya;Agus;Tanaman Pangan;Traktor Roda 2;1;2022;APBN;Baik
+5;Bangka Selatan;Payung;Payung;Gapoktan Krio Panting;Maryono;Tanaman Pangan;Traktor Roda 2;1;2022;APBN;Baik
+6;Bangka Selatan;Toboali;Rias;UPJA Balai Benih;Bandrin;Tanaman Pangan;Traktor Roda 2;1;2022;APBN;Baik
+7;Bangka Selatan;Toboali;Rias;UPJA Berkah Tani;Edi Suhartono;Tanaman Pangan;Traktor Roda 2;1;2022;APBN;Baik
+8;Bangka Selatan;Tukak Sadai;Bukit Terap;Gapoktan Terap Berjaya;Rosidi;Tanaman Pangan;Traktor Roda 2;1;2022;APBN;Baik
+9;Bangka Selatan;Air Gegas;Pergam;UPJA Meralin;Bambang;Tanaman Pangan;Traktor Roda 2;1;2024;APBN;Baik
+10;Bangka Selatan;Lepar;Penutuk;UPJA Penutuk Jaya;Edi Kartolo;Tanaman Pangan;Pompa Air;2;2024;APBN;Baik
+11;Bangka Selatan;Lepar;Penutuk;UPJA Penutuk Jaya;Ahmad Kartolo;Tanaman Pangan;Traktor Roda 2;1;2024;APBN;Baik
+12;Bangka Selatan;Lepar;Tanjung Labu;Gapoktan Maju Bersama;Deka;Tanaman Pangan;Traktor Roda 2;1;2024;APBN;Baik
+13;Bangka Selatan;Lepar Pongok;Pongok;Gapoktan Tunas Muda;A Zumri;Tanaman Pangan;Traktor Roda 2;1;2024;APBN;Baik
+14;Bangka Selatan;Payung;Payung;Gapoktan Krio Pantin;Maryona;Tanaman Pangan;Pompa Air;1;2024;APBN;Baik
+15;Bangka Selatan;Pulau Besar;Batu Betumpang;Gapoktan Dungun Raya;Gumbali;Tanaman Pangan;Pompa Air;1;2024;APBN;Baik
+16;Bangka Selatan;Pulau Besar;Batu Betumpang;UPJA Dungun Raya;Rosidi;Tanaman Pangan;Pompa Air;1;2024;APBN;Baik
+17;Bangka Selatan;Pulau Besar;Batu Betumpang;UPJA Dungun Raya;Sopian;Tanaman Pangan;Pompa Air;12;2024;APBN;Baik
+18;Bangka Selatan;Pulau Besar;Batu Betumpang;UPJA Dungun Raya;Rosidi;Tanaman Pangan;Traktor Roda 2;3;2024;APBN;Baik
+19;Bangka Selatan;Pulau Besar;Batu Betumpang;UPJA Dungun Raya;Rosidi;Tanaman Pangan;Traktor Roda 4;2;2024;APBN;Baik
+20;Bangka Selatan;Simpang Rimba;Gudang;Gapoktan Batin Tikal;Idrus;Tanaman Pangan;Pompa Air;1;2024;APBN;Baik
+21;Bangka Selatan;Simpang Rimba;Sebagin;Gapoktan Sebagin Jaya;Rudi;Tanaman Pangan;Traktor Roda 2;1;2024;APBN;Baik
+22;Bangka Selatan;Toboali;Jeriji;UPJA Mundu;Madi;Tanaman Pangan;Pompa Air;3;2024;APBN;Baik
+23;Bangka Selatan;Toboali;Kepoh;Gapoktan Karya Makmur;Yusuf;Tanaman Pangan;Pompa Air;3;2024;APBN;Baik
+24;Bangka Selatan;Toboali;Rias;BP Marsudi Tani;Imam Qolbi;Tanaman Pangan;Pompa Air;1;2024;APBN;Baik
+25;Bangka Selatan;Toboali;Rias;BP. Rias Makmur;Samsul;Tanaman Pangan;Pompa Air;1;2024;APBN;Baik
+26;Bangka Selatan;Toboali;Rias;UPJA Balai Beni;Bandrin;Tanaman Pangan;Traktor Roda 4;1;2024;APBN;Baik
+27;Bangka Selatan;Toboali;Rias;UPJA Balai Benih;Bandrin;Tanaman Pangan;Rotavator;1;2024;APBN;Baik
+28;Bangka Selatan;Toboali;Rias;UPJA Berkah Tani;Edi Ismono;Tanaman Pangan;Pompa Air;2;2024;APBN;Baik
+29;Bangka Selatan;Toboali;Rias;UPJA Berkah Tani;Edi Ismono;Tanaman Pangan;Pompa Air;3;2024;APBN;Baik
+30;Bangka Selatan;Toboali;Rias;UPJA Berkah Tani;Edi Ismono;Tanaman Pangan;Rotavator;1;2024;APBN;Baik
+31;Bangka Selatan;Toboali;Rias;UPJA Berkah Tani;Edi Suhartono;Tanaman Pangan;Traktor Roda 2;7;2024;APBN;Baik
+32;Bangka Selatan;Toboali;Rias;UPJA Berkah Tani;Edi Suhartono;Tanaman Pangan;Traktor Roda 4;1;2024;APBN;Baik
+33;Bangka Selatan;Toboali;Rias;UPJA Marga Jaya;Rojim;Tanaman Pangan;Pompa Air;6;2024;APBN;Baik
+34;Bangka Selatan;Toboali;Rias;UPJA Marga Jaya;Rojim;Tanaman Pangan;Traktor Roda 2;3;2024;APBN;Baik
+35;Bangka Selatan;Toboali;Rias;UPJA Margajaya;Rojim;Tanaman Pangan;Traktor Roda 4;1;2024;APBN;Baik
+36;Bangka Selatan;Toboali;Rias;UPJA Serdang Makmur;Sudirno;Tanaman Pangan;Traktor Roda 4;1;2024;APBN;Baik
+37;Bangka Selatan;Toboali;Serdang;UPJA Serdang Makmur;Sudirno;Tanaman Pangan;Traktor Roda 2;3;2024;APBN;Baik
+38;Bangka Selatan;Air Gegas;Pergam;Beras Basa;Sandi;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+39;Bangka Selatan;Air Gegas;Pergam;Beras Basa;Sandi;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+40;Bangka Selatan;Air Gegas;Pergam;Beras Basa;Sandi;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+41;Bangka Selatan;Air Gegas;Pergam;Beras Basa;Sandi;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+42;Bangka Selatan;Air Gegas;Pergam;Mekar Sari;Migo Dori;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+43;Bangka Selatan;Air Gegas;Pergam;Mekar Sari;Migo Dori;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+44;Bangka Selatan;Air Gegas;Pergam;Mekar Sari;Migo Dori;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+45;Bangka Selatan;Air Gegas;Pergam;Mekar Sari;Migo Dori;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+46;Bangka Selatan;Air Gegas;Sidoharjo;Sidoharjo Bersatu;Suhudi;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+47;Bangka Selatan;Air Gegas;Sidoharjo;Sidoharjo Bersatu;Suhudi;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+48;Bangka Selatan;Air Gegas;Sidoharjo;Sidoharjo Bersatu;Suhudi;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+49;Bangka Selatan;Air Gegas;Sidoharjo;Sidoharjo Bersatu;Suhudi;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+50;Bangka Selatan;Air Gegas;Sidoharjo;Sri Agung Tani;Amin Fahrudin;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+51;Bangka Selatan;Air Gegas;Sidoharjo;Sri Agung Tani;Amin Fahrudin;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+52;Bangka Selatan;Air Gegas;Sidoharjo;Sri Agung Tani;Amin Fahrudin;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+53;Bangka Selatan;Air Gegas;Sidoharjo;Sri Agung Tani;Amin Fahrudin;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+54;Bangka Selatan;Lepar;Penutuk;Bahtera Lepar;Deri Apriansyah;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+55;Bangka Selatan;Lepar;Penutuk;Bahtera Lepar;Deri Apriansyah;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+56;Bangka Selatan;Lepar;Penutuk;Bahtera Lepar;Deri Apriansyah;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+57;Bangka Selatan;Lepar;Penutuk;Bahtera Lepar;Deri Apriansyah;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+58;Bangka Selatan;Pulau Besar;Batu Betumpang;Batu Betmpang Bersatu;Alpia;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+59;Bangka Selatan;Pulau Besar;Batu Betumpang;Batu Betmpang Bersatu;Alpia;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+60;Bangka Selatan;Pulau Besar;Batu Betumpang;Batu Betmpang Bersatu;Alpia;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+61;Bangka Selatan;Pulau Besar;Batu Betumpang;Batu Betmpang Bersatu;Alpia;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+62;Bangka Selatan;Pulau Besar;Batu Betumpang;Pemuda Tani;Ali Akbar;Tanaman Pangan;Drone Sprayer;1;2025;APBN;Baik
+63;Bangka Selatan;Pulau Besar;Batu Betumpang;Pemuda Tani;Ali Akbar;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+64;Bangka Selatan;Pulau Besar;Batu Betumpang;Pemuda Tani;Ali Akbar;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+65;Bangka Selatan;Pulau Besar;Batu Betumpang;Pemuda Tani;Ali Akbar;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+66;Bangka Selatan;Pulau Besar;Batu Betumpang;Sukses Bersama;Bastami;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+67;Bangka Selatan;Pulau Besar;Batu Betumpang;Sukses Bersama;Bastami;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+68;Bangka Selatan;Pulau Besar;Batu Betumpang;Sukses Bersama;Bastami;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+69;Bangka Selatan;Pulau Besar;Batu Betumpang;Tunas Bangsa;Dedi Saputra;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+70;Bangka Selatan;Pulau Besar;Batu Betumpang;Tunas Bangsa;Dedi Saputra;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+71;Bangka Selatan;Pulau Besar;Batu Betumpang;Tunas Bangsa;Dedi Saputra;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+72;Bangka Selatan;Pulau Besar;Batu Betumpang;Ulim Mandiri;Anto;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+73;Bangka Selatan;Pulau Besar;Batu Betumpang;Ulim Mandiri;Anto;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+74;Bangka Selatan;Pulau Besar;Batu Betumpang;Ulim Mandiri;Anto;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+75;Bangka Selatan;Pulau Besar;Batu Betumpang;Ulim Mandiri;Anto;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+76;Bangka Selatan;Pulau Besar;Fajar Indah;Fajar Tani Bersatu;Alkahfi;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+77;Bangka Selatan;Pulau Besar;Fajar Indah;Fajar Tani Bersatu;Alkahfi;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+78;Bangka Selatan;Pulau Besar;Fajar Indah;Fajar Tani Bersatu;Alkahfi;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+79;Bangka Selatan;Pulau Besar;Fajar Indah;Fajar Tani Bersatu;Alkahfi;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+80;Bangka Selatan;Toboali;;Brigade Dinas;;Tanaman Pangan;Pompa Air;31;2025;APBN;Baik
+81;Bangka Selatan;Toboali;;Brigade Dinas;;Tanaman Pangan;Rotavator;10;2025;APBN;Baik
+82;Bangka Selatan;Toboali;;Brigade Dinas;;Tanaman Pangan;Traktor Roda 2;3;2025;APBN;Baik
+83;Bangka Selatan;Toboali;;Brigade Dinas;;Tanaman Pangan;Traktor Roda 4;32;2025;APBN;Baik
+84;Bangka Selatan;Toboali;Kepoh;Bersepakat;Mitra Pratama;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+85;Bangka Selatan;Toboali;Kepoh;Bersepakat;Mitra Pratama;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+86;Bangka Selatan;Toboali;Kepoh;Bersepakat;Mitra Pratama;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+87;Bangka Selatan;Toboali;Kepoh;Bersepakat;Mitra Pratama;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+88;Bangka Selatan;Toboali;Kepoh;Mupakat;Rodini;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+89;Bangka Selatan;Toboali;Kepoh;Mupakat;Rodini;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+90;Bangka Selatan;Toboali;Kepoh;Mupakat;Rodini;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+91;Bangka Selatan;Toboali;Kepoh;Mupakat;Rodini;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+92;Bangka Selatan;Toboali;Rias;Balai Benih;Andri Andriansyah;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+93;Bangka Selatan;Toboali;Rias;Balai Benih;Andri Andriansyah;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+94;Bangka Selatan;Toboali;Rias;Balai Benih;Andri Andriansyah;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+95;Bangka Selatan;Toboali;Rias;Guna Karya;Sukarya;Tanaman Pangan;Drone Sprayer;1;2025;APBN;Baik
+96;Bangka Selatan;Toboali;Rias;Guna Karya;Sukarya;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+97;Bangka Selatan;Toboali;Rias;Guna Karya;Sukarya;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+98;Bangka Selatan;Toboali;Rias;Guna Karya;Sukarya;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+99;Bangka Selatan;Toboali;Rias;Guna Karya;Sukarya;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+100;Bangka Selatan;Toboali;Rias;Maju Bersama;Widodo Rahayu;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+101;Bangka Selatan;Toboali;Rias;Maju Bersama;Widodo Rahayu;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+102;Bangka Selatan;Toboali;Rias;Maju Bersama;Widodo Rahayu;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+103;Bangka Selatan;Toboali;Rias;Marsudi Tani;Iman Qolbi;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+104;Bangka Selatan;Toboali;Rias;Marsudi Tani;Iman Qolbi;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+105;Bangka Selatan;Toboali;Rias;Marsudi Tani;Iman Qolbi;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+106;Bangka Selatan;Toboali;Rias;Rias Makmur;Samsul Bahri;Tanaman Pangan;Drone Sprayer;1;2025;APBN;Baik
+107;Bangka Selatan;Toboali;Rias;Rias Makmur;Samsul Bahri;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+108;Bangka Selatan;Toboali;Rias;Rias Makmur;Samsul Bahri;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+109;Bangka Selatan;Toboali;Rias;Rias Makmur;Samsul Bahri;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+110;Bangka Selatan;Toboali;Rias;Sinar Semesta;Chandra Haitari;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+111;Bangka Selatan;Toboali;Rias;Sinar Semesta;Chandra Haitari;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+112;Bangka Selatan;Toboali;Rias;Sinar Semesta;Chandra Haitari;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+113;Bangka Selatan;Toboali;Rias;Tani Maju;Rotib;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+114;Bangka Selatan;Toboali;Rias;Tani Maju;Rotib;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+115;Bangka Selatan;Toboali;Rias;Tani Maju;Rotib;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+116;Bangka Selatan;Toboali;Rias;Tani Makmur;Edi Suhartono;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+117;Bangka Selatan;Toboali;Rias;Tani Makmur;Edi Suhartono;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+118;Bangka Selatan;Toboali;Rias;Tani Makmur;Edi Suhartono;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+119;Bangka Selatan;Toboali;Rias;Tani Sejahtera;Nurdin Soleh;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+120;Bangka Selatan;Toboali;Rias;Tani Sejahtera;Nurdin Soleh;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+121;Bangka Selatan;Toboali;Rias;Tani Sejahtera;Nurdin Soleh;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+122;Bangka Selatan;Toboali;Rias;UPJA Balai Beni;Bandrin;Tanaman Pangan;Traktor Roda 4;1;2025;APBN;Baik
+123;Bangka Selatan;Toboali;Serdang;Bersatu;Nandi;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+124;Bangka Selatan;Toboali;Serdang;Bersatu;Nandi;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+125;Bangka Selatan;Toboali;Serdang;Bersatu;Nandi;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+126;Bangka Selatan;Toboali;Serdang;Karya Sentosa;Rubi;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+127;Bangka Selatan;Toboali;Serdang;Karya Sentosa;Rubi;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+128;Bangka Selatan;Toboali;Serdang;Karya Sentosa;Rubi;Tanaman Pangan;Traktor Roda 2;1;2025;APBN;Baik
+129;Bangka Selatan;Toboali;Serdang;Karya Sentosa;Rubi;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+130;Bangka Selatan;Toboali;Serdang;Sejahtera;Bastari;Tanaman Pangan;Pompa Air;4;2025;APBN;Baik
+131;Bangka Selatan;Toboali;Serdang;Sejahtera;Bastari;Tanaman Pangan;Rotavator;2;2025;APBN;Baik
+132;Bangka Selatan;Toboali;Serdang;Sejahtera;Bastari;Tanaman Pangan;Traktor Roda 4;4;2025;APBN;Baik
+1;Bangka Barat;Mentok;Dsn. Pal 4 Ds. Belo Laut;Brigade Alsintan DKPP;Azmal AZ;;Pompa Air 3 Inch;1 0;2024;Ditjen PSP - APBN (Hibah);B aik
+2;Bangka Barat;Mentok;Dsn. Pal 4 Ds. Belo Laut;Brigade Alsintan DKPP;Azmal AZ;;Traktor Roda 4;1;2024;Ditjen PSP - APBN (Hibah);Baik
+3;Bangka Barat;Mentok;Air Limau;Gapoktan Limau Jaya;Dedi Yuda;;Cultivator;1;2023;APBD I;Baik
+4;Bangka Barat;Sp. Teritip;Bukit Terak;Gapoktan Jaya Bersama;Mirwan;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+5;Bangka Barat;Sp. Teritip;Bukit Terak;Gapoktan Jaya Bersama;Mirwan;Pangan;Traktor Roda 4;1;2024;Ditjen PSP - APBN (Hibah);Baik
+6;Bangka Barat;Sp. Teritip;Bukit Terak;Gapoktan Jaya Bersama;Mirwan;Pangan;Pompa Air 3 Inch;3;2024;Pinjam Pakai Brigade Alsintan 05/05/2025;Baik
+7;Bangka Barat;Kelapa;Tuik;Gapoktan Pakat;Septian;;Power Thresher;1;2025;Ditjen Tanaman Pangan (Hibah) Aspirasi;Baik
+8;Bangka Barat;Kelapa;Kelapa;Gapoktan Karya Usaha;Alman Faluti;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+9;Bangka Barat;Kelapa;Kelapa;Gapoktan Karya Usaha;Alman Faluti;Pangan;Traktor Roda 4;1;2024;Ditjen PSP - APBN (Hibah);Baik
+10;Bangka Barat;Kelapa;Kelapa;Gapoktan Karya Usaha;Alman Faluti;Pangan;"Pompa Air 4""";1;2024;Ditjen PSP - APBN (Hibah);Baik
+11;Bangka Barat;Kelapa;Kelapa;Gapoktan Karya Usaha;Alman Faluti;;Power Thresher;1;2025;Ditjen Tanaman Pangan (Hibah) Aspirasi;Baik
+12;Bangka Barat;Kelapa;Kelapa;UPJA Terampi;Jamil Muazam;Pangan;"Pompa Air 3 """;1;2024;Ditjen PSP - APBN (Hibah);Baik
+13;Bangka Barat;Kelapa;Dsn. Belit Ds. Dendang;Poktan Temiang Sari;Nazir;Pangan;Traktor Roda 4;1;2024;Ditjen PSP - APBN (Hibah);Baik
+14;Bangka Barat;Kelapa;Tebing;Gapoktan Tebing Jaya;Sabeni;Pangan;Handtraktor;2;2022;Berigade Dinas Pertanian Provinsi ( Pinjam Pakai );Baik
+15;Bangka Barat;Kelapa;Tebing;Gapoktan Tebing Jaya;Sabeni;Pangan;Power Threser;1;2023;Satker Provinsi Ditjen Tanaman Pangan;Baik
+16;Bangka Barat;Kelapa;Tebing;Gapoktan Tebing Jaya;Sabeni;Pangan;Handtraktor;1;2025;Bank Indonesia;Baik
+17;Bangka Barat;Kelapa;Tebing;Gapoktan Tebing Jaya;Sabeni;Pangan;Power Threser;1;2025;Bank Indonesia;Baik
+18;Bangka Barat;Kelapa;Tebing;Gapoktan Tebing Jaya;Sabeni;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+19;Bangka Barat;Kelapa;Tebing;UPJA Berjaya;Agus;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+20;Bangka Barat;Kelapa;Air Bulin;Poktan Indah Permai;Ustari;Pangan;"Pompa Air 6""";1;2024;Ditjen PSP - APBN (Hibah);Baik
+21;Bangka Barat;Kelapa;Air Bulin;Poktan Indah Permai;Ustari;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+22;Bangka Barat;Kelapa;Air Bulin;Poktan Taruna Makmur;Pikri Tornado;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Mesin Penggerak Hilang
+23;Bangka Barat;Kelapa;Mancung;Gapoktan Sinar Belawang;Sasa Zurana;Pangan;Traktor Roda 4;1;2024;Ditjen PSP - APBN (Hibah);Baik
+24;Bangka Barat;Kelapa;Mancung;Gapoktan Sinar Belawang;Sasa Zurana;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+25;Bangka Barat;Kelapa;Mancung;Gapoktan Sinar Belawang;Sasa Zurana;Pangan;"Pompa Air 6""";1;2024;Ditjen PSP - APBN (Hibah);Baik
+26;Bangka Barat;Kelapa;Mancung;Gapoktan Sinar Belawang;Sasa Zurana;Pangan;Pompa Air 3 Inch;2;2025;Ditjen PSP - APBN (Hibah);Baik
+27;Bangka Barat;Kelapa;Mancung;Poktan Harapan Kita;Marhen;Pangan;Pompa Air 3 Inch;1;2024;Pinjam Pakai Brigade Alsintan 1 3/03/2025;Baik
+28;Bangka Barat;Kelapa;Kacung;Brigade Pangan Ketapik;Izam Pratama;Pangan;Power Thresher;2;2025;Ditjen Tanaman Pangan - APBN (Hibah);Baik
+29;Bangka Barat;Kelapa;Dendang;Brigade Pangan Desa Dendang;Suhardi;Pangan;Handtraktor;2;2025;Ditjen PSP - APBN (Hibah);Baik
+30;Bangka Barat;Kelapa;Dendang;Brigade Pangan Desa Dendang;Suhardi;Pangan;Power Thresher;2;2025;Ditjen Tanaman Pangan - APBN (Hibah);Baik
+31;Bangka Barat;Kelapa;Sinar Sari;Gapoktan Sinar Harapan;Kamarudin;Hortikultura;Power Threser;1;2023;APBD I;Baik
+32;Bangka Barat;Kelapa;Sinar Sari;Gapoktan Sinar Harapan;Kamarudin;Hortikultura;Cultivator;1;2023;APBD I;Baik
+33;Bangka Barat;Kelapa;Sinar Sari;Gapoktan Sinar Harapan;Kamarudin;Hortikultura;Handtraktor;1;2025;Bank Indonesia;Baik
+34;Bangka Barat;Tempilang;Dsn. Petaling Jaya Desa Simpang Yul;Gapoktan Pangkon Sejahtera;Sulaiman;Pangan;Combine Harvester;1;2021;Satker Dinas Pertanian Provinsi (Tanaman;Baik
+35;Bangka Barat;Tempilang;Dsn. Petaling Jaya Desa Simpang Yul;Gapoktan Pangkon Sejahtera;Sulaiman;Pangan;Traktor Roda 4;1;2022;P g ) Dinas Pertanian Provinsi APBD I;Baik
+36;Bangka Barat;Tempilang;Dsn. Petaling Jaya Desa Simpang Yul;Gapoktan Pangkon Sejahtera;Sulaiman;Pangan;Traktor Crawler;1;2024;Ditjen PSP - APBN (Hibah);Baik
+37;Bangka Barat;Tempilang;Dsn. Petaling Jaya Desa Simpang Yul;Gapoktan Pangkon Sejahtera;Sulaiman;Pangan;Pompa Air 3 Inch;1;2024;Pinjam Pakai Brigade Alsintan 1 2/06/2025;Baik
+38;Bangka Barat;Tempilang;Simpang Yul;Brigade Pangan Kamitra;Abdul Shidik;Pangan;Power Thresher;2;2025;Ditjen Tanaman Pangan - APBN (Hibah);Baik
+39;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Prima Tani;Dahlan;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+40;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Poktan Bersila;Romli;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+41;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Brigade Pangan Sejahtera;Ali;Pangan;Handtraktor;2;2025;Ditjen PSP - APBN (Hibah);Baik
+42;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Brigade Pangan Sejahtera;Ali;Pangan;Pompa Air 3 Inch;2;2025;Ditjen PSP - APBN (Hibah);Baik
+43;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Brigade Pangan Sejahtera;Ali;Pangan;Power Thresher;2;2025;Ditjen Tanaman Pangan - APBN (Hibah);Baik
+44;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;Pangan;Traktor Roda 4;1;2022;Berigade Dinas Pertanian Provinsi ( Pinjam Pakai );Baik
+45;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;Pangan;Handtraktor;1;2022;Berigade Dinas Pertanian Provinsi ( Pinjam Pakai );Baik
+46;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;Pangan;Power Threser;1;2022;Satker Provinsi Ditjen Tanaman Pangan;Baik
+47;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;Pangan;Traktor Roda 4;1;2022;Dinas Pertanian Provinsi APBD I;Baik
+48;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;Pangan;Alat Perbengkelan;1;2022;Ditjen PSP APBN (HIBAH);Baik
+49;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;;- Kendaraan Roda 3;1;;;
+50;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;;- Suku Cadang Alsuntan;1;;;
+51;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;;- Peralatan Perbengkelan;1;;;
+52;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+53;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;Pangan;Handtraktor Kronos;1;2024;Bank Indonesia (Hibah);Baik
+54;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Gapoktan Bukit Lestari Buyan;Bambang;;Pompa Air 3 Inch;2;2024;Pinjam Pakai Brigade Alsintan 23/04/2025;Baik
+55;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;UPJA Bukit Lestari;Toni;Pangan;Power Thresher;1;2023;APBD 1;Baik
+56;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Poktan Bukit Lestari;Suyanto;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+57;Bangka Barat;Tempilang;Dusun Buyan Desa Buyan Kelumbi;Poktan Jaya Bersama;Sukri;Pangan;Handtraktor;1;2024;Ditjen PSP - APBN (Hibah);Baik
+58;Bangka Barat;Jebus;Pebuar;Brigade Pangan Mempari;Erza Saputra;Pangan;Power Thresher;2;2025;Ditjen Tanaman Pangan - APBN (Hibah);Baik
+59;Bangka Barat;Jebus;Limbung;Gapoktan Limbung Jaya;Syamsul Bahri;Pangan;Pompa Air 3 Inch;2;2024;Pinjam Pakai Brigade Alsintan 24/04/2025;Baik
+60;Bangka Barat;Jebus;Limbung;Gapoktan Limbung Jaya;Syamsul Bahri;Pangan;Pompa Air 3 Inch;2;2025;Ditjen PSP - APBN (Hibah);Baik
+1;Bangka;Mendo Barat;Mendo;Poktan Bukit Bare;MARWAN Z;Pangan Horti;Cultivator;1;2021;APBN;-
+2;Bangka;Merawang;Kimak;POKTAN REDAP BAHRIN LESTARI I;KODRI SAHNAN;Pangan Horti;Cultivator;1;2021;APBN;-
+3;Bangka;Merawang;Balun Ijuk;Poktan Nyiur Melambai;SAMSIR;Pangan Horti;Pompa Air;2;2024;APBN;BAIK
+4;Bangka;Riau Silip;Banyuasin;Gapoktan Hikmah Tani;SOSIAWINATA;Pangan Horti;Pompa Air;2;2024;APBN;BAIK
+5;Bangka;Puding Besar;Labu;Gapoktan Labu Maju Bersama;KANDAR;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+6;Bangka;Mendo Barat;Penagan;Gapoktan Suka Makmur;ABU SAMAH;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+7;Bangka;Puding Besar;Tanah Bawah;Gapoktan Usaha Tani Bersama;ZAMANI;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+8;Bangka;Riau Silip;Pangkal Niur;Gapoktan Buluh Perindu;GINA ARIANSAH;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+9;Bangka;Mendo Barat;Mendo;Gapoktan Panca Usaha;ISWADI;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+10;Bangka;Puding Besar;Nibung;Gapoktan Harapan Sejahtera;AMIN;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+11;Bangka;Puding Besar;Puding Besar;Poktan Berkah Tani;LEO ISKANDAR;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+12;Bangka;Puding Besar;Saing;Gapoktan Saing Sejahtera;IBHAR;Pangan Horti;Pompa Air;1;2024;APBN;BAIK
+13;Bangka;Merawang;Kimak;Brigade Pangan Kimak Bahrin Lestari;ERWAN;Pangan Horti;Combine Harvester Besar Padi;1;2024;APBN;BAIK
+14;Bangka;Puding Besar;Tanah Bawah;Gapoktan Usaha Tani Bersama;ZAMANI;Pangan Horti;Traktor Roda 4;1;2025;APBN;BAIK
+15;Bangka;Merawang;Riding Panjang;Gapoktan Sinar Harapan;UCHA PATOREDI;Pangan Horti;Traktor Roda 4;1;2025;APBN;BAIK
+16;Bangka;Mendo Barat;Kemuja;Brigade Pangan Kemuja Sejahtera;HASBULLAH;Pangan Horti;Combine Harvester Besar Padi;1;2025;APBN;BAIK
+17;Bangka;Mendo Barat;Petaling;Brigade Pangan Berkah Petaling;SUMARDI;Pangan Horti;Power Threser;2;2025;APBN;BAIK
+18;Bangka;Riau Silip;Banyuasin;Brigade Pangan Hikmah Tani;IWAN;Pangan Horti;Power Threser;2;2025;APBN;BAIK
+19;Bangka;Puding Besar;Puding Besar;Brigade Pangan Puding Besar Sejahtera;SUANDA;Pangan Horti;Power Threser;2;2025;APBN;BAIK
+20;Bangka;Mendo Barat;Kemuja;Brigade Pangan Kemuja Sejahtera;HASBULLAH;Pangan Horti;Traktor Roda 4;1;2025;APBN;BAIK
+21;Bangka;Mendo Barat;Kemuja;Brigade Pangan Kemuja Sejahtera;HASBULLAH;Pangan Horti;Rice Transplanter;2;2025;APBN;BAIK
+22;Bangka;Mendo Barat;Kemuja;Brigade Pangan Kemuja Sejahtera;HASBULLAH;Pangan Horti;Traktor Roda 2;4;2025;APBN;BAIK
+23;Bangka;Mendo Barat;Kemuja;Brigade Pangan Kemuja Sejahtera;HASBULLAH;Pangan Horti;Traktor Crawler;2;2025;APBN;BAIK
+1;Bangka Tengah;Sungai Selan;Lampur;Bukit Terung Jaya;Jauhari;Hortikultura;Mesin Steam;1;2021;APBDP-II;Rusak Ringan
+2;Bangka Tengah;Sungai Selan;Lampur;Bukit Terung Jaya;Yanto;Hortikultura;Mesin Steam;1;2021;APBDP-II;Baik
+3;Bangka Tengah;Sungai Selan;Lampur;Sabar Subur Sejahtera;Sabar;Hortikultura;Mesin Steam;1;2021;APBDP-II;Rusak Ringan
+4;Bangka Tengah;Sungai Selan;Lampur;Sabar Subur Sejahtera;Dadang Burdia;Hortikultura;Mesin Steam;1;2021;APBDP-II;Baik
+5;Bangka Tengah;Sungai Selan;Lampur;Usaha Bersama;Ponimin;Hortikultura;Mesin Steam;1;2021;APBDP-II;Baik
+6;Bangka Tengah;Sungai Selan;Lampur;Usaha Bersama;Angga Kurniawan;Hortikultura;Mesin Steam;1;2021;APBDP-II;Rusak Ringan
+7;Bangka Tengah;Sungai Selan;Lampur;Damai;Andi Kurniawan;Hortikultura;Mesin Steam;1;2021;APBDP-II;Rusak Ringan
+8;Bangka Tengah;Sungai Selan;Lampur;Air Pasir Garam;Erlangga;Hortikultura;Mesin Steam;1;2021;APBDP-II;Baik
+9;Bangka Tengah;Sungai Selan;Lampur;Pelita Mandiri;Yudi Riyanto;Hortikultura;Mesin Steam;1;2021;APBDP-II;Rusak Ringan
+10;Bangka Tengah;Sungai Selan;Lampur;KWT Cempaka;Yang Ratnawati;Hortikultura;Mesin Steam;1;2021;APBDP-II;Rusak Ringan
+11;Bangka Tengah;Koba;Padang Mulia;Ma'iisyah Mulia;Aries Hendrata;Hortikultura;Cultivator;1;2021;APBN;Baik
+12;Bangka Tengah;Lubuk Besar;Lubuk Pabrik;Perlang Tani Millenial;Johan Anwar;Hortikultura;Cultivator;1;2021;APBN;Baik
+13;Bangka Tengah;Lubuk Besar;Lubuk Pabrik;Pading Makmur;Maimun;Hortikultura;Cultivator;1;2021;APBN;Baik
+14;Bangka Tengah;Simpang Katis;Katis;Tunas Mekar;Sugeng;Hortikultura;Cultivator;1;2021;APBN;Baik
+15;Bangka Tengah;Sungaiselan;Melabun;Mandiri;Pendi;Hortikultura;Cultivator;1;2021;APBN;Baik
+16;Bangka Tengah;Koba;Simpang Perlang;Suramadu;Sukamto;Hortikultura;Cultivator;1;2021;APBN;Baik
+17;Bangka Tengah;Simpang Katis;Pasir Garam;Tunas Harapan Jaya Millenial;Sugito;Hortikultura;Cultivator;1;2021;APBN;Baik
+18;Bangka Tengah;Sungai Selan;Kerantai;Sinar Jaya;Zamzami;Hortikultura;Pompa Air;1;2021;APBN;Baik
+19;Bangka Tengah;Sungai Selan;Sarangmandi;Berkong Berkarya;Ferdiansyah;Hortikultura;Pompa Air;1;2021;APBN;Baik
+20;Bangka Tengah;Sungai Selan;Keretak Atas;Pemuda Pacer;Zubari;Hortikultura;Pompa Air;1;2021;APBN;Baik
+21;Bangka Tengah;Simpang Katis;Pinang Sebatang;Pinang Makmur;Ahmad Nakar;Hortikultura;Pompa Air;1;2021;APBN;Baik
+22;Bangka Tengah;Simpang Katis;Katis;Sepakat Tani;Alwani;Hortikultura;Pompa Air;1;2021;APBN;Baik
+23;Bangka Tengah;Namang;Cambai;Cambai Agri Makmur;Twenty Nova;Hortikultura;Pompa Air;1;2021;APBN;Rusak Ringan
+24;Bangka Tengah;Pangkalan Baru;Beluluk;Kejora Sejahtera;Zaini;Hortikultura;Pompa Air;1;2021;APBN;Baik
+25;Bangka Tengah;Koba;Penyak;Bukit Daeng;Tatang;Hortikultura;Pompa Air;1;2021;APBN;Baik
+26;Bangka Tengah;Lubuk Besar;Kulur;Milenial;Ferry Rosady;Hortikultura;Pompa Air;1;2021;APBN;Baik
+27;Bangka Tengah;Lubuk Besar;Perlang;Nadi Lestari II;Agus Suryo Utomo;Hortikultura;Pompa Air;1;2021;APBN;Baik
+28;Bangka Tengah;Koba;Padang Mulia;Ma'iisyah Mulia;Aries Hendrata;Hortikultura;Cultivator;1;2021;APBN;Rusak Ringan
+29;Bangka Tengah;Pangkalan Baru;Pedindang;Rukun Tani;Karno;Jagung;Corn Sheller;1;2022;TP Provinsi;Rusak Ringan
+30;Bangka Tengah;Pangkalan Baru;Benteng;Merengkan Jaya;Henni;Jagung;Corn Sheller;1;2022;TP Provinsi;Rusak Ringan
+31;Bangka Tengah;Lubuk Besar;Lubuk Pabrik;UPJA Tunas Baru;Suyoto;Jagung;Corn Sheller;1;2022;TP Provinsi;Rusak Ringan
+32;Bangka Tengah;Koba;Arung Dalam;Lahan Sederhana;Lahan Sederhana;Hortikultura;Cultivator;1;2023;APBD 1 (PROV);Baik
+33;Bangka Tengah;Sungai selan;sungai selan;air tepiras;air tepiras;Hortikultura;Cultivator;1;2023;APBD 1 (PROV);Baik
+34;Bangka Tengah;Simpang katis;celuak;berkah abadi;berkah abadi;Hortikultura;Cultivator;1;2023;APBD 1 (PROV);Baik
+35;Bangka Tengah;Koba;Guntung;Sejahtera setia kawan;Sejahtera setia kawan;Hortikultura;Cultivator;1;2023;APBD II (KAB);Baik
+36;Bangka Tengah;Koba;Padang Mulia;Sumber Rezaki;Sumber Rezaki;Hortikultura;Cultivator;1;2023;APBD II (KAB);Baik
+37;Bangka Tengah;Lubukbesar;Lubuklingkuk;Guyub rukun;Guyub rukun;Hortikultura;Cultivator;1;2023;APBD II (KAB);Baik
+38;Bangka Tengah;Simpangkatis;Pinang Sebatang;Pinang Makmur;Pinang Makmur;Hortikultura;Cultivator;1;2023;APBD II (KAB);Baik
+39;Bangka Tengah;Koba;Simpang Perlang;Tumbuh berhasil;Tumbuh berhasil;Hortikultura;Cultivator;1;2023;Bank Indonesia;Baik
+40;Bangka Tengah;Pangkalanbaru;Air mesu timur;Timur Makmur;Timur Makmur;Hortikultura;Cultivator;1;2023;Bank Indonesia;Baik
+41;Bangka Tengah;Koba;Simpang Perlang;Maju bersama;Maju bersama;Hortikultura;cultivator;1;2023;APBD II DIF (KAB);Baik
+42;Bangka Tengah;Lubukbesar;Kulur Ilir;Jaya Mandiri;Jaya Mandiri;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+43;Bangka Tengah;Libukbesar;Perlang;Karya Bersama;Karya Bersama;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+44;Bangka Tengah;Pangkalan Baru;Mangkol;Tunas Baru;Tunas Baru;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+45;Bangka Tengah;Pangkalan Baru;Air mesu;Bukit Tunggal;Bukit Tunggal;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+46;Bangka Tengah;Namang;Jelutung;UPJA Sumber Rezeki;UPJA Sumber Rezeki;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+47;Bangka Tengah;Namang;Cambai;Cambai Agri Makmur;Cambai Agri Makmur;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+48;Bangka Tengah;Simpang Katis;Simpang Katis;Tambah subur;Tambah subur;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+49;Bangka Tengah;Simpang Katis;Puput;Suka Bersama;Suka Bersama;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+50;Bangka Tengah;Simpang Katis;Katis;Rukun Jaya;Rukun Jaya;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+51;Bangka Tengah;Sungai selan;Romadhon;Sinar tani;Sinar tani;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+52;Bangka Tengah;Sungai selan;Keretak atas;Pemuda Pacer;Pemuda Pacer;Hortikultura;Cultivator;1;2023;APBD II DIF (KAB);Baik
+53;Bangka Tengah;Lubukbesar;Perlang;Nadi Lestari II;Nadi Lestari II;Hortikultura;Pompa Air;1;2023;APBN HORTI (DPI);Baik
+54;Bangka Tengah;Namang;Jelutung;Air Papan II;Air Papan II;Hortikultura;Pompa Air;1;2023;APBN HORTI (DPI);Baik
+55;Bangka Tengah;Namang;Cambai;Harapan Jaya;Harapan Jaya;Hortikultura;Pompa Air;1;2023;APBN HORTI (DPI);Baik
+56;Bangka Tengah;Koba;Padang Mulia;Titian Tani;Titian Tani;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+57;Bangka Tengah;Koba;Koba;Pemuda Milenial;Pemuda Milenial;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+58;Bangka Tengah;Lubuk Besar;Perlang;Nadi Lestari I;Nadi Lestari I;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+59;Bangka Tengah;Lubuk Besar;Perlang;Maju Terus;Maju Terus;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+60;Bangka Tengah;Lubuk Besar;Lubuk Besar;Simpang Horti;Simpang Horti;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+61;Bangka Tengah;Lubuk Besar;Lubuk Lingkuk;Tunas Muda;Tunas Muda;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+62;Bangka Tengah;Pangkalan Baru;Airmesu Timur;Mahesa;Mahesa;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+63;Bangka Tengah;Pangkalan Baru;Dul;Maju Bersama;Maju Bersama;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+64;Bangka Tengah;Namang;Bukit Kijang;Tunas Karya Bukit Lesung;Tunas Karya Bukit Lesung;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+65;Bangka Tengah;Namang;Belilik;Tunas Maju;Tunas Maju;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+66;Bangka Tengah;Simpang Katis;Simpang Katis;Bina Tani;Bina Tani;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+67;Bangka Tengah;Sungai Selan;Tanjung Pura;Gapoktan Pura Mandiri;Gapoktan Pura Mandiri;Hortikultura;Pompa Air;1;2023;APBD II DIF (KAB);Baik
+68;Bangka Tengah;Namang;Namang;Upja Maju Bersama;Upja Maju Bersama;Pangan;Power Thereser;1;2023;APBD 1 (PROV);Baik
+69;Bangka Tengah;Lubuk Besar;Lubuk Pabrik;Gapoktan Pading Makmur;Gapoktan Pading Makmu;Hortikultura;Handtraktor;1;2023;APBD II DIF (KAB);Baik
+70;Bangka Tengah;Namang;Namang;Upja Maju Bersama;Upja Maju Bersama;Pangan;Handtraktor;2;2023;APBD II DIF (KAB);Rusak Ringan (1)
+71;Bangka Tengah;Namang;Cambai Selatan;Upja Berkah;Upja Berkah;Hortikultura;Handtraktor;1;2023;APBD II DIF (KAB);Baik
+72;Bangka Tengah;Pangkalan Baru;Jeruk;Gapoktan Jeruk Raya;Gapoktan Jeruk Raya;Hortikultura;Handtraktor;1;2023;APBD II DIF (KAB);Baik
+73;Bangka Tengah;Simpang Katis;Pasir Garam;Upja Mandiri;Upja Mandiri;Hortikultura;Handtraktor;1;2023;APBD II DIF (KAB);Baik
+74;Bangka Tengah;Namang;Belilik;Aik danau;Mardiono;Pangan;TR4;1;2024;APBN;Baik
+75;Bangka Tengah;Namang;Belilik;Aik danau;Mardiono;Pangan;TR2;3;2024;APBN;Baik
+76;Bangka Tengah;Namang;Namang;Maju bersama;Mudir;Pangan;TR2;2;2024;APBN;Baik
+77;Bangka Tengah;Koba;Padang Mulia;Brigade Alsintan;DPKP;Pangan;Pompa Air;15;2024;APBN;Baik
+78;Bangka Tengah;Namang;Belilik;Brigade Pangan;Agus yudi saputra;Pangan;Power Therser;2;2025;APBN;Baik
+1;Belitung;Membalong;Perpat;BP BELITUNG II;HERU PURWONO;Tanaman Pangan;Traktor Roda 4;1;2025;APBN Kementan RI;Baik
+2;Belitung;Membalong;Perpat;BP BELITUNG II;HERU PURWONO;Tanaman Pangan;Traktor Roda 2;2;2025;APBN Kementan RI;Baik
+3;Belitung;Membalong;Perpat;BP BELITUNG II;HERU PURWONO;Tanaman Pangan;Rice Transplanter;1;2025;APBN Kementan RI;Baik
+4;Belitung;Membalong;Perpat;BP BELITUNG II;HERU PURWONO;Tanaman Pangan;Traktor Crawler;1;2025;APBN Kementan RI;Baik
+5;Belitung;Membalong;Perpat;BP BELITUNG II;HERU PURWONO;Tanaman Pangan;Power Thresher;2;2025;APBN Kementan RI;Baik
+6;Belitung;Tanjungpandan;Buluh Tumbang;Kampong Agro Makmur;TESSAR WILLIANTO;Hortikultura;Cultivator Roda Empat;1;2025;DID Fiskal Kinerja Th sblnya;Baik
+7;Belitung;Badau;Air Batu Buding;Tanjung Kruing;HERI;Hortikultura;Cultivator Roda Empat;1;2025;DID Fiskal Kinerja Th sblnya;Baik
+8;Belitung;Tanjungpandan;Air Saga;Suka Makmur;SOFWAN AR;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+9;Belitung;Tanjungpandan;Pangkallalang;Setia Usaha;SAWAKI;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+10;Belitung;Tanjungpandan;Buluh Tumbang;Kampong Agro Makmur;TESSAR WILLIANTO;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+11;Belitung;Sijuk;Batu Itam;Sawah Harapan Baru;ARMAN SUSENO;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+12;Belitung;Membalong;Kembiri;Kelekak Titang Sejahtera;SURYADI;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+13;Belitung;Membalong;Perpat;Kremak Jaya;SAIFUDIN;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+14;Belitung;Membalong;Bantan;Aik Manda Maju Bersama;KHARIANTO B. PUTRA;Tanaman Pangan;Traktor Roda 2;1;2024;APBN Kementan RI;Baik
+15;Belitung;Badau;Cerucuk;Agro Kenupu;PAWIT USMAN;Tanaman Pangan;Rotavator;1;2024;APBN Kementan RI;Baik
+16;Belitung;Sijuk;Air Seru;Harapan Tani;YOPI ANDARESTA;Hortikultura;Cultivator;1;2024;APBN Kementan RI;Baik
+17;Belitung;Kabupaten;DKPP;Brigade Alsintan;YOPI ANDARESTA;Hortikultura;Traktor Roda 4;1;2024;APBN Kementan RI;Baik
+18;Belitung;Kabupaten;DKPP;Brigade Alsintan;YOPI ANDARESTA;Tanaman Pangan;Pompa Air;10;2024;APBN Kementan RI;Baik
+19;Belitung;Sijuk;Batu Itam;Sawah Harapan Baru;ARMAN SUSENO;Tanaman Pangan/Hortikultura;Pompa Air;1;2024;APBN Kementan RI;Baik
+20;Belitung;Sijuk;Air Selumar;Fajar Rejeki;M. YUSUF;Tanaman Pangan/Hortikultura;Pompa Air;1;2024;APBN Kementan RI;Baik
+21;Belitung;Badau;Cerucuk;Agro Kenupu;PAWIT USMAN;Tanaman Pangan/Hortikultura;Pompa Air;2;2024;APBN Kementan RI;Baik
+22;Belitung;Membalong;Kembiri;Kelekak Titang Sejahtera;SURYADI;Tanaman Pangan/Hortikultura;Pompa Air;1;2024;;Baik
+23;Belitung;Membalong;Simpang Rusa;Aik Bakul;SASRAN;Tanaman Pangan/Hortikultura;Pompa Air;2;2024;;Baik
+24;Belitung;Membalong;Membalong;Sri Rezeki;HADI SURYADI;Tanaman Pangan/Hortikultura;Pompa Air;2;2024;;Baik
+25;Belitung;Membalong;Tanjung Rusa;Setia;KAMARUDIN;Tanaman Pangan/Hortikultura;Pompa Air;1;2024;;Baik
+26;Belitung;Tanjungpandan;7 desa;Pribadi Petani;KAMARUDIN;Tanaman Pangan/Hortikultura;Pompa Air Konversi BBM ke BBG;59;2024;APBN Kementerian ESDM;Baik
+27;Belitung;Sijuk;7 desa;Pribadi Petani;KAMARUDIN;Tanaman Pangan/Hortikultura;Pompa Air Konversi BBM ke BBG;76;2024;APBN Kementerian ESDM;Baik
+28;Belitung;Badau;4 desa;Pribadi Petani;KAMARUDIN;Tanaman Pangan/Hortikultura;Pompa Air Konversi BBM ke BBG;41;2024;APBN Kementerian ESDM;Baik
+29;Belitung;Membalong;9 desa;Pribadi Petani;KAMARUDIN;Tanaman Pangan/Hortikultura;Pompa Air Konversi BBM ke BBG;174;2024;APBN Kementerian ESDM;Baik
+30;Belitung;Membalong;Kembiri;Kelekak Titang Sejahtera;SURYADI;Hortikultura;Cultivator;1;2024;APBD KAB;Baik
+31;Belitung;Badau;Cerucuk;BP BELITUNG I;SAFAN ASSIDIQI AL MUGHNIL;Tanaman Pangan;Combine Harvester Besar;1;2024;APBN Kementan RI;Baik
+32;Belitung;Membalong;Perpat;Gapoktan Bertuah;MUSDIYANTO;Tanaman Pangan;RMU Mobil;1;2023;APBD PROV;Baik
+33;Belitung;Membalong;Perpat;Kremak Jaya;SAIFUDIN;Tanaman Pangan;RMP;1;2023;DAK;Baik
+34;Belitung;Tanjungpandan;Buluh Tumbang;Mekar Lestari;SAMAT;Hortikultura;Cultivator;1;2023;APBD PROV;Baik
+35;Belitung;Sijuk;Air Seruk;Makmur;SUYENDRI;Hortikultura;Cultivator;1;2023;APBD PROV;Baik
+36;Belitung;Membalong;Membalong;Perintis;EDY SUPRIADI;Hortikultura;Cultivator;1;2023;DAK;Baik
+37;Belitung;Membalong;Membalong;Arjuna Jaya Tani;SIDIK;Hortikultura;Cultivator;1;2023;DAK;Baik
+38;Belitung;Membalong;Lassar;Aik Paluk;SUPARNO;Hortikultura;Cultivator;1;2023;DAK;Baik
+39;Belitung;Membalong;Simpang Rusa;Tani Maju;MINAN;Hortikultura;Cultivator;1;2023;DAK;Baik
+40;Belitung;Membalong;Simpang Rusa;Merantan Jaya;REFI'E;Hortikultura;Cultivator;1;2023;APBD KAB;Baik
+41;Belitung;Tanjungpandan;4 desa;Pribadi Petani;REFI'E;Tanaman Pangan dan Hortikultura;Pompa Air Konversi BBM ke BBG;67;2023;APBN Kementerian ESDM;Baik
+42;Belitung;Membalong;3 desa;Pribadi Petani;REFI'E;Tanaman Pangan dan Hortikultura;Pompa Air Konversi BBM ke BBG;18;2023;APBN Kementerian ESDM;Baik
+43;Belitung;Selat Nasik;1 desa;Pribadi Petani;REFI'E;Tanaman Pangan dan Hortikultura;Pompa Air Konversi BBM ke BBG;3;2023;APBN Kementerian ESDM;Baik
+44;Belitung;Sijuk;5 desa;Pribadi Petani;REFI'E;Tanaman Pangan dan Hortikultura;Pompa Air Konversi BBM ke BBG;51;2023;APBN Kementerian ESDM;Baik
+45;Belitung;Badau;3 desa;Pribadi Petani;REFI'E;Tanaman Pangan dan Hortikultura;Pompa Air Konversi BBM ke BBG;47;2023;APBN Kementerian ESDM;Baik
+46;Belitung;Tanjungpandan;DKPP;Brigade Alsintan;;Tanaman Pangan;Power Tresher;1;2022;APBN PUSAT;Baik
+47;Belitung;Membalong;Tanjung Rusa;Setia;KAMARUDIN;Tanaman Pangan;RMU/ Penggilingan Padi;1;2022;APBD PROV;Baik
+48;Belitung;Membalong;Perpat;Kremak Jaya;SAIFUDIN;Pangan / Horti;Cultivator;1;2022;APBD DID;Baik
+49;Belitung;Membalong;Simpang Rusa;Mandiri Jaya;RAHIMAN;Tangan Pangan;Penepung Biji Lada;1;2022;APBD DID;Baik
+50;Belitung;Membalong;Bantan;Suga Ketakung Makmur;SIRMAN;Tanaman Pangan;APPO;1;2022;APBD DID;Baik
+51;Belitung;Tanjungpandan;Buluh Tumbang;Lestari;DARNO;Hortikultura;Cultivator;1;2022;APBD DID;Baik
+52;Belitung;Sijuk;Terong;Tanam Tumbuh Sejahtera;DANI APRIANTO;Hortikultura;Cultivator;1;2022;APBD DID;Baik
+53;Belitung;Sijuk;Sungai Padang;Bina Tani;HARYANTO;Hortikultura;Cultivator;1;2022;APBD DID;Baik
+54;Belitung;Tanjungpandan;Air Saga;Sabar Subur Sejahtera;HANJIBAR;horti;Cultivator;1;2021;APBN PUSAT;Baik
+55;Belitung;Tanjungpandan;Dukong;Dukong Jaya Bersatu;SYAIFUL HAYAT;horti;Cultivator;1;2021;APBN PUSAT;Baik
+56;Belitung;Tanjungpandan;Air Merbau;Cahaya Baru;JII SUSANTO;pangan dan horti;Traktor Roda 2;1;2021;APBN PUSAT;Baik
+57;Belitung;Membalong;Bantan;Suga Ketakung Makmur;SIRMAN;pangan;Traktor Roda 2;1;2021;APBN PUSAT;Baik
+58;Belitung;Membalong;Membalong;Jujur Makmur;SUTARTO;horti;Cultivator;1;2021;APBN PUSAT;Baik
+59;Belitung;Badau;Cerucuk;Aik Bayur;SUWARTA ATMAJA;pangan;Rice Transplanter;1;2021;APBN PUSAT;Baik
+60;Belitung;Sijuk;Air Seruk;Sumber Rejeki Abadi;SUGIIN;horti;Traktor Roda 2;1;2021;APBN PUSAT;Baik
+1;Belitung TImur;Gantung;Lilangan;Poktan Sepakat Maju;Nurhani;Hortikultura;Cultivator;1;2021;APBN;Baik
+2;Belitung TImur;Simpang Renggiang;Renggiang;Poktan Aik Teras;Harpan;Hortikultura;Cultivator;1;2021;APBN;Baik
+3;Belitung TImur;Damar;Burung Mandi;Poktan Aik Perepat;Djumhatta;Hortikultura;Cultivator;1;2021;APBN;Baik
+4;Belitung TImur;Damar;Aik Kelik;Poktan Karya Sepakat;Buliardi;Hortikultura;Cultivator;1;2021;APBN;Baik
+5;Belitung TImur;Kelapa Kampit;Mentawak;Poktan Aik Kilong;Taufik Hidayat;Hortikultura;Cultivator;1;2021;APBN;Baik
+6;Belitung TImur;Damar;Burung Mandi;Poktan Aik Kapas;Rawi;Hortikultura;Cultivator;1;2021;APBN;Baik
+7;Belitung TImur;Simpang Renggiang;Simpang Tiga;Poktan Bumi Lestari;Hamnan;Hortikultura;Cultivator;1;2021;APBN;Rusak
+8;Belitung TImur;Simpang Renggiang;Renggiang;Poktan Harapan Tani Sejahtera;Safei;Hortikultura;Cultivator;1;2021;APBN;Baik
+9;Belitung TImur;Dendang;Jangkang;Poktan Subur Jaya;Saryandi;Hortikultura;Cultivator;1;2021;APBN;Baik
+10;Belitung TImur;Gantung;Mufakat;Gapoktan Mufakat;Lizar S;Padi;Handtraktor;1;2021;APBD;Baik
+11;Belitung TImur;Dendang;Balok;Poktan Harapan Baru;Haryanto;Padi;Handtraktor;1;2021;APBD;Baik
+12;Belitung TImur;Gantung;Gantung;Poktan Harapan Bersama;Hidayat;Padi;Power Threser;1;2022;APBD Provinsi;Baik
+13;Belitung TImur;Dendang;Nyuruk;Poktan Sumber Jaya 2;Kardiyanto;Padi;Power Threser;1;2022;APBD;Baik
+14;Belitung TImur;Dendang;Nyuruk;Poktan Karya Alam;Jasni;Padi;Power Threser;1;2022;APBD;Baik
+15;Belitung TImur;Dendang;Nyuruk;Poktan Sumber Jaya 1;Marham;Padi;Power Threser;1;2022;APBD;Baik
+16;Belitung TImur;Dendang;Nyuruk;Poktan Mekar Bakti;Sarkawi;Padi;Power Threser;1;2022;APBD;Baik
+17;Belitung TImur;Simpang Renggiang;Lintang;Poktan Aik Tungkup;Sudianto;Padi;Power Threser;1;2022;APBD;Baik
+18;Belitung TImur;Simpang Renggiang;Lintang;Poktan Aik Nyerenai;Husaini;Padi;Power Threser;1;2022;APBD;Baik
+19;Belitung TImur;Kelapa Kampit;Mayang;Poktan Berkah Tani;Idrus;Hortikultura;Handtraktor;1;2022;APBD;Baik
+20;Belitung TImur;Damar;Aik Kelik;Poktan Karya Sepakat;Buliardi;Padi;Handtraktor;1;2022;APBD;Baik
+21;Belitung TImur;Gantung;Gantung;Gapoktan Mufakat;Lizar S;Padi;Handtraktor;1;2022;APBD;Baik
+22;Belitung TImur;Damar;Mengkubang;Poktan Aik Kemang;Agustono;Hortikultura;Cultivator;1;2023;APBD Provinsi;Baik
+23;Belitung TImur;Manggar;Kelubi;Poktan Makmur Barokah;Agus Wiyono;Hortikultura;Cultivator;1;2023;APBD Provinsi;Baik
+24;Belitung TImur;Manggar;Bentaian;Poktan Aik Jelutong;Bazaro;Hortikultura;Cultivator;1;2023;APBD Provinsi;Baik
+25;Belitung TImur;Simpang Renggiang;Simpang Tiga;Poktan Bumi Lestari;Hamnan;Padi;Handtraktor;1;2024;APBN;Baik
+26;Belitung TImur;Simpang Renggiang;Lintang;Poktan Aik Nyerenai;Husaini;Padi;Handtraktor;1;2024;APBN;Baik
+27;Belitung TImur;Dendang;Nyuruk;Poktan Sumber Jaya;Marhan;Padi;Handtraktor;1;2024;APBN;Baik
+28;Belitung TImur;Dendang;Balok;Poktan Harapan Baru;Haryanto;Padi;Handtraktor;1;2024;APBN;Baik
+29;Belitung TImur;Dendang;Balok;Poktan Maju Bersama;Indro Mukis;Padi;Handtraktor;1;2024;APBN;Baik
+30;Belitung TImur;Dendang;Jangkang;Poktan Suka Maju;Bahiman;Padi;Handtraktor;1;2024;APBN;Baik
+31;Belitung TImur;Simpang Renggiang;Renggiang;Poktan Sido Mulyo;Yetni Mustopa;Padi;Handtraktor;1;2024;APBN;Baik
+32;Belitung TImur;Gantung;Gantung;Poktan Mekar Jaya;Saryono;Padi;Handtraktor;1;2024;APBN;Baik
+33;Belitung TImur;Gantung;Gantung;Poktan Suka Maju;Sanipan;Padi;Handtraktor;1;2024;APBN;Baik
+34;Belitung TImur;Gantung;Gantung;Bersatu;Rusli;Padi;Handtraktor;1;2024;APBN;Baik
+35;Belitung TImur;Manggar;Manggar;Brigade Alsintan Kabupaten;Bidang Tph;Padi, Hortikultura;Traktor Roda 4;1;2024;APBN;Baik
+36;Belitung TImur;Gantung;Gantung;Gapoktan Mufakat;Lizar S;Padi;Traktor Crawler;1;2024;APBN;Baik
+37;Belitung TImur;Manggar;Manggar;Brigade Alsintan Kabupaten;Bidang Tph;Padi, Hortikultura;Pompa Air;10;2024;APBN;Baik
+38;Belitung TImur;Gantung;Gantung;Gapoktan Mufakat;Lizar S;Padi;Handsprayer;5;2024;APBN;Baik
+39;Belitung TImur;Simpang Renggiang;Simpang Tiga;Poktan Bumi Lestari;Hamnan;Padi;Handsprayer;1;2024;APBN;Baik
+40;Belitung TImur;Dendang;Nyuruk;Poktan Sumber Jaya;Marhan;Padi;Handsprayer;2;2024;APBN;Baik
+41;Belitung TImur;Dendang;Balok;Poktan Harapan Baru;Haryanto;Padi;Handsprayer;1;2024;APBN;Baik
+42;Belitung TImur;Damar;Burung Mandi;Poktan Bangkit Berkarya;Johari;Hortikultura;Handsprayer;1;2024;APBN;Baik
+43;Belitung TImur;Dendang;Jangkang;Poktan Pelita Bumi Raya;Wahtu Santosa;Hortikultura;Handsprayer;2;2024;APBN;Baik
+44;Belitung TImur;Manggar;Padang;Poktan Budi Karya;Deni;Hortikultura;Handsprayer;1;2024;APBN;Baik
+45;Belitung TImur;Simpang Renggiang;Lintang;Poktan Aik Nyerenai;Husaini;Padi;Handsprayer;1;2024;APBN;Baik
+46;Belitung TImur;Gantung;Gantung;Bp Mufakat;Lizar S;Padi;Combine Harvester Besar;1;2024;APBN;Baik
+47;Belitung TImur;Gantung;Gantung;Bp Mufakat;Lizar S;Padi;Handtraktor;1;2025;APBN;Baik
+48;Belitung TImur;Gantung;Gantung;Bp Mufakat;Lizar S;Padi;Rice Transplenter;1;2025;APBN;Baik
+49;Belitung TImur;Gantung;Gantung;Bp Mufakat;Lizar S;Padi;Combine Harvester Besar;1;2025;APBN;Baik
+50;Belitung TImur;Gantung;Gantung;Bp Danau Nujau;Trijaka P;Padi;Combine Harvester Besar;1;2025;APBN;Baik
+51;Belitung TImur;Gantung;Gantung;Bp Danau Nujau;Trijaka P;Padi;Traktor Crawler;1;2025;APBN;Baik
+52;Belitung TImur;Gantung;Gantung;Bp Mufakat;Lizar S;Padi;Pompa Air;1;2025;APBN;Baik
+53;Belitung TImur;Gantung;Gantung;Bp Danau Nujau;Trijaka P;Padi;Pompa Air;1;2025;APBN;Baik
+54;Belitung TImur;Dendang;Dendang;Bp Sipedang Jaya;Meri A;Padi;Power Threser;2;2025;APBN;Baik
+55;Belitung TImur;Simpang Renggiang;Lintang;Bp Bersatu Makmur;Husaini;Padi;Power Threser;2;2025;APBN;Baik
+"""
+
+lines = csv_data.split('\\n')
+brigades = {}
+alsintan_list = []
+
+brigade_id_counter = 1
+alsintan_id_counter = 1
+
+def map_type(raw_type):
+    rt = raw_type.lower()
+    if 'roda 4' in rt or 'tr4' in rt:
+        return 'Traktor Roda 4'
+    if 'roda 2' in rt or 'tr2' in rt or 'handtraktor' in rt or 'hand traktor' in rt or 'cultivator' in rt:
+        return 'Traktor Roda 2'
+    if 'combine' in rt:
+        return 'Combine Harvester'
+    if 'pompa' in rt:
+        return 'Pompa Air'
+    if 'transplanter' in rt:
+        return 'Rice Transplanter'
+    return 'Traktor Roda 2' # default fallback for things like power thresher/sprayer etc
+
+for line in lines:
+    parts = line.split(';')
+    if len(parts) < 12 or parts[0] == 'No' or 'Sumber/Link' in parts[2] or not parts[0].isdigit():
+        continue
+    
+    kabupaten = parts[1].strip()
+    kecamatan = parts[2].strip()
+    desa = parts[3].strip()
+    kelompok = parts[4].strip()
+    ketua = parts[5].strip()
+    alat = parts[7].strip()
+    try:
+        qty = int(parts[8].strip().split(' ')[0]) # handle '1 0' or '1'
+    except:
+        qty = 1
+    
+    tahun = parts[9].strip()
+    status_raw = parts[11].strip().lower()
+    status = 'Aktif' if 'baik' in status_raw else 'Rusak'
+    
+    if not kelompok:
+        kelompok = "Brigade " + kecamatan
+    
+    # Create unique brigade key
+    b_key = f"{kabupaten}-{kecamatan}-{desa}-{kelompok}".lower()
+    if b_key not in brigades:
+        b_id = f"brg-csv-{brigade_id_counter}"
+        brigade_id_counter += 1
+        brigades[b_key] = {
+            'id': b_id,
+            'name': kelompok,
+            'province': 'Kepulauan Bangka Belitung',
+            'regency': kabupaten,
+            'district': kecamatan,
+            'village': desa,
+            'leader': ketua if ketua else 'Ketua ' + kelompok,
+            'phone': '080000000000'
+        }
+    
+    b_id = brigades[b_key]['id']
+    
+    for i in range(qty):
+        a_id = f"als-csv-{alsintan_id_counter}"
+        alsintan_id_counter += 1
+        alsintan_list.append({
+            'id': a_id,
+            'code': f"AL-CSV-{alsintan_id_counter:04d}",
+            'name': f"{alat} {kelompok}",
+            'type': map_type(alat),
+            'brand': 'Generic',
+            'model': alat,
+            'year': int(tahun) if tahun.isdigit() else 2024,
+            'status': status,
+            'brigadeId': b_id
+        })
+
+print(f"Total Brigades: {len(brigades)}")
+print(f"Total Alsintan: {len(alsintan_list)}")
+
+with open('d:/APLIKASI/brigade-pepi/parsed_data.json', 'w') as f:
+    json.dump({'brigades': list(brigades.values()), 'alsintan': alsintan_list}, f, indent=2)

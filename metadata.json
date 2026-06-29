@@ -1,0 +1,11 @@
+{
+  "name": "Remix: BrigadeX PEPI ",
+  "description": "Smart Management for Brigade Pangan\nSistem Laporan Kinerja Alat Mesin Pertanian Brigade Pangan nasional. Kelola operasional Alsintan, operator, BBM, jam kerja, biaya, dan dashboard sebaran nasional.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
