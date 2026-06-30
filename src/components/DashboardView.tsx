@@ -152,7 +152,7 @@ export default function DashboardView({
     (!filterBrigade || b.id === filterBrigade)
   ), [brigades, filterRegency, filterDistrict, filterBrigade]);
 
-  const Skeleton = ({ className }: { className: string }) => (
+  const Skeleton = ({ className }: { className?: string }) => (
     <div className={`animate-pulse bg-slate-200 rounded ${className}`}></div>
   );
   const [serviceSchedules] = useState(() => {
@@ -951,7 +951,11 @@ export default function DashboardView({
 
               {isLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i}>
+                      <Skeleton className="h-24 w-full" />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -21,6 +21,7 @@ import ReportsExportsView from './components/ReportsExportsView';
 import SecuritySettingsView from './components/SecuritySettingsView';
 import SdlcDocumentation from './components/SdlcDocumentation';
 import { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import WABillingModal from './components/WABillingModal';
 import ProfileModal from './components/ProfileModal';
 import { db } from './lib/firebase';
